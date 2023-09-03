@@ -29,14 +29,16 @@ class Restaurant(Base):
     
     @classmethod
     def fanciest(self):
-        fancy = session.query(Restaurant.name, Restaurant.price).order_by(desc(Restaurant.price)).first()
+        fancy = session.query(Restaurant).order_by(desc(Restaurant.price)).first()
         return fancy
     
     @property
-    def all_reviews():
-        sample = [restaurant for restaurant in session.query(Restaurant.restaurant_reviews).all()]
-        return sample
-    
+    def all_reviews(self):
+        reviews = []
+        for review in self.review:   
+            review_str = f'Review for {self.name} by {review.customer.first_name} {review.customer.last_name}: {review.star_rating} stars.'
+            reviews.append(review_str)
+        return reviews 
 
 
 class Customer(Base):
@@ -63,9 +65,23 @@ class Customer(Base):
     def full_name(self):
         return f'{self.first_name} {self.last_name}'
     
-    # @property
-    # def favourite_restaurant(self):
-    #     best = 
+    @property
+    def favourite_restaurant(self):
+        favourite = max(self.reviews, key=lambda review: review.star_rating)
+        return favourite.restaurant
+    
+    def add_review(self, restaurant, rating):
+        new_review = Review(restaurant=restaurant, customer = self, star_rating = rating)
+        session.add(new_review)
+        session.commit()
+        
+    def delete_reviews(self, restaurant):
+        reviews_to_delete = session.query(Review).filter(Review.restaurant == restaurant, Review.customer == self).all()
+        
+        for review in reviews_to_delete:
+            session.delete(review)
+            
+        session.commit()
         
     
 class Review(Base):
@@ -93,7 +109,7 @@ class Review(Base):
     
     @property
     def full_review(self):
-        return f'Review for{self.restaurant.name} by {self.customer.first_name} {self.customer.second_name}: {self.star_rating}'
+        return f'Review for {self.restaurant.name} by {self.customer.first_name} {self.customer.second_name}: {self.star_rating} starts.'
     
 if __name__ == '__main__':
     

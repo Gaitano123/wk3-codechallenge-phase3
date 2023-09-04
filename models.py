@@ -1,7 +1,6 @@
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import  relationship, sessionmaker
-from sqlalchemy import create_engine
-from sqlalchemy import ForeignKey, Column, Integer, String, DateTime, MetaData, desc
+from sqlalchemy import create_engine, ForeignKey, Column, Integer, String, MetaData, desc
 
 engine = create_engine('sqlite:///restaurants.db')
 Base = declarative_base()
